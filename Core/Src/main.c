@@ -56,57 +56,57 @@ static void MX_TIM4_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-struct {
-	GPIO_TypeDef *GPIOx;
-	uint16_t GPIO_Pin;
-} digit[] = {
-		{D1_GPIO_Port, D1_Pin},
-		{D2_GPIO_Port, D2_Pin},
-		{D3_GPIO_Port, D3_Pin},
-		{D4_GPIO_Port, D4_Pin},
-		{D5_GPIO_Port, D5_Pin},
-		{D6_GPIO_Port, D6_Pin},
-		{D7_GPIO_Port, D7_Pin},
-		{D8_GPIO_Port, D8_Pin}
-
-};
-
-uint8_t symbol[] = {
-		0x7C,
-		0x5C,
-		0x5C,
-		0x7C,
-		0x78,
-		0x30,
-		0x78,
-		0x6D
-
-};
-
-struct {
-	uint8_t symbol, digit;
-} snake[] = {
-		{0x01, 7},
-		{0x01, 6},
-		{0x01, 5},
-		{0x01, 4},
-		{0x01, 3},
-		{0x01, 2},
-		{0x01, 1},
-		{0x01, 0},
-		{0x02, 0},
-		{0x04, 0},
-		{0x08, 0},
-		{0x08, 1},
-		{0x08, 2},
-		{0x08, 3},
-		{0x08, 4},
-		{0x08, 5},
-		{0x08, 6},
-		{0x08, 7},
-		{0x10, 7},
-		{0x20, 7}
-};
+//struct {
+//	GPIO_TypeDef *GPIOx;
+//	uint16_t GPIO_Pin;
+//} digit[] = {
+//		{D1_GPIO_Port, D1_Pin},
+//		{D2_GPIO_Port, D2_Pin},
+//		{D3_GPIO_Port, D3_Pin},
+//		{D4_GPIO_Port, D4_Pin},
+//		{D5_GPIO_Port, D5_Pin},
+//		{D6_GPIO_Port, D6_Pin},
+//		{D7_GPIO_Port, D7_Pin},
+//		{D8_GPIO_Port, D8_Pin}
+//
+//};
+//
+//uint8_t symbol[] = {
+//		0x7C,
+//		0x5C,
+//		0x5C,
+//		0x7C,
+//		0x78,
+//		0x30,
+//		0x78,
+//		0x6D
+//
+//};
+//
+//struct {
+//	uint8_t symbol, digit;
+//} snake[] = {
+//		{0x01, 7},
+//		{0x01, 6},
+//		{0x01, 5},
+//		{0x01, 4},
+//		{0x01, 3},
+//		{0x01, 2},
+//		{0x01, 1},
+//		{0x01, 0},
+//		{0x02, 0},
+//		{0x04, 0},
+//		{0x08, 0},
+//		{0x08, 1},
+//		{0x08, 2},
+//		{0x08, 3},
+//		{0x08, 4},
+//		{0x08, 5},
+//		{0x08, 6},
+//		{0x08, 7},
+//		{0x10, 7},
+//		{0x20, 7}
+//};
 
 /* USER CODE END 0 */
 
@@ -140,7 +140,7 @@ int main(void)
   MX_GPIO_Init();
   MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
-
+  seven_segment_init();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -150,29 +150,29 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  for(uint32_t j = 0; j < 100; j++){
-		  for(uint16_t i = 0; i < 8; i++){
-			  /* Write symbol */
-			  GPIOA->ODR &= ~(A_Pin | B_Pin | C_Pin | D_Pin | E_Pin | F_Pin | G_Pin | DP_Pin);
-			  GPIOA->ODR |= (~symbol[7 - i]) & (A_Pin | B_Pin | C_Pin | D_Pin | E_Pin | F_Pin | G_Pin | DP_Pin);
-
-			  HAL_GPIO_WritePin(digit[i].GPIOx, digit[i].GPIO_Pin, SET);
-			  HAL_Delay(1);
-			  HAL_GPIO_WritePin(digit[i].GPIOx, digit[i].GPIO_Pin, RESET);
-
-		  }
-	  }
-
-	  for(uint16_t i = 0; i < 20; i++){
-		  /* Write symbol */
-		  GPIOA->ODR &= ~(A_Pin | B_Pin | C_Pin | D_Pin | E_Pin | F_Pin | G_Pin | DP_Pin);
-		  GPIOA->ODR |= (~snake[i].symbol) & (A_Pin | B_Pin | C_Pin | D_Pin | E_Pin | F_Pin | G_Pin | DP_Pin);
-
-		  HAL_GPIO_WritePin(digit[snake[i].digit].GPIOx, digit[snake[i].digit].GPIO_Pin, SET);
-		  HAL_Delay(50);
-		  HAL_GPIO_WritePin(digit[snake[i].digit].GPIOx, digit[snake[i].digit].GPIO_Pin, RESET);
-
-	  }
+//	  for(uint32_t j = 0; j < 100; j++){
+//		  for(uint16_t i = 0; i < 8; i++){
+//			  /* Write symbol */
+//			  GPIOA->ODR &= ~(A_Pin | B_Pin | C_Pin | D_Pin | E_Pin | F_Pin | G_Pin | DP_Pin);
+//			  GPIOA->ODR |= (~symbol[7 - i]) & (A_Pin | B_Pin | C_Pin | D_Pin | E_Pin | F_Pin | G_Pin | DP_Pin);
+//
+//			  HAL_GPIO_WritePin(digit[i].GPIOx, digit[i].GPIO_Pin, SET);
+//			  HAL_Delay(1);
+//			  HAL_GPIO_WritePin(digit[i].GPIOx, digit[i].GPIO_Pin, RESET);
+//
+//		  }
+//	  }
+//
+//	  for(uint16_t i = 0; i < 20; i++){
+//		  /* Write symbol */
+//		  GPIOA->ODR &= ~(A_Pin | B_Pin | C_Pin | D_Pin | E_Pin | F_Pin | G_Pin | DP_Pin);
+//		  GPIOA->ODR |= (~snake[i].symbol) & (A_Pin | B_Pin | C_Pin | D_Pin | E_Pin | F_Pin | G_Pin | DP_Pin);
+//
+//		  HAL_GPIO_WritePin(digit[snake[i].digit].GPIOx, digit[snake[i].digit].GPIO_Pin, SET);
+//		  HAL_Delay(50);
+//		  HAL_GPIO_WritePin(digit[snake[i].digit].GPIOx, digit[snake[i].digit].GPIO_Pin, RESET);
+//
+//	  }
   }
   /* USER CODE END 3 */
 }
