@@ -1,4 +1,7 @@
 "./App/7segment/7segment.o"
+"./App/button/button.o"
+"./App/button/button_port.o"
+"./App/keyboard/keyboard.o"
 "./Core/Src/main.o"
 "./Core/Src/stm32f1xx_hal_msp.o"
 "./Core/Src/stm32f1xx_it.o"
