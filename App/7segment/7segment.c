@@ -21,15 +21,15 @@ struct {
 
 struct {
 	bool enabled;
-	uint8_t code;
+	uint8_t symbol;
 } digit[DIGITS_COUNT] = {0};
 
 uint8_t digit_current_index = 0;
 
 void seven_segment_init(void){
 	for(uint8_t i = 0; i < DIGITS_COUNT; i++){
-		digit[i].enabled = true;
-		digit[i].code = digits[9];
+		digit[i].enabled = false;
+		digit[i].symbol = 0;
 	}
 }
 
@@ -46,9 +46,47 @@ void seven_segment_tick(void){
 
 	/* Set code for next digit on segments port */
 	if(digit[digit_current_index].enabled){
-		GPIOA->ODR ^= digit[digit_current_index].code & (A_Pin|B_Pin|C_Pin|D_Pin|E_Pin|F_Pin|G_Pin|DP_Pin);
+		GPIOA->ODR ^= digit[digit_current_index].symbol & (A_Pin|B_Pin|C_Pin|D_Pin|E_Pin|F_Pin|G_Pin|DP_Pin);
 	}
 
 	/* Enable current digit */
 	HAL_GPIO_WritePin(digit_hw[digit_current_index].GPIOx, digit_hw[digit_current_index].GPIO_Pin, SET);
 }
+
+void seven_segment_enable(uint8_t index, bool state){
+	digit[index].enabled = state;
+}
+
+bool seven_segment_is_enabled(uint8_t index){
+	return digit[index].enabled;
+}
+
+void seven_segment_set_symbol(uint8_t index, uint8_t symbol){
+	digit[index].symbol = symbol;
+}
+
+uint8_t seven_segment_get_symbol(uint8_t index){
+	return digit[index].symbol;
+}
+
+void seven_segment_set_dot(uint8_t index, bool state){
+	if(state){
+		digit[index].symbol |= 0x80;
+	}
+	else{
+		digit[index].symbol &= ~0x80;
+	}
+}
+
+bool seven_segment_get_dot(uint8_t index){
+	return (digit[index].symbol & 0x80)?(true):(false);
+}
+
+void seven_segment_set_number(uint8_t index, uint8_t number){
+	if(number > 9){
+		number = 9;
+	}
+
+	digit[index].symbol = digits[number];
+}
+

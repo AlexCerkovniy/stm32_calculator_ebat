@@ -141,6 +141,8 @@ int main(void)
   MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
   seven_segment_init();
+  seven_segment_enable(0, true);
+  seven_segment_set_number(0, 5);
   /* USER CODE END 2 */
 
   /* Infinite loop */
