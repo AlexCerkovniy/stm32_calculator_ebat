@@ -2,10 +2,12 @@
 #include "7segment.h"
 #include "keyboard.h"
 
-calc_number_t display;
-float display_float;
-float result = 0;
+calc_number_t display, result;
+float display_float = 0;
+float buffer_float = 0;
+float result_float = 0;
 calc_operation_t operation = CALC_OP_NONE;
+bool wait_second_arg = false;
 bool show_result = true;
 bool update = false;
 
@@ -16,7 +18,7 @@ static void number_convert_from_float(float f, calc_number_t *number);
 
 void calculator_init(void){
 	number_set_zero(&display);
-	result = 0;
+	result_float = 0;
 	operation = CALC_OP_NONE;
 	update = true;
 }
@@ -33,12 +35,13 @@ void calculator_main(void){
 
 		/* Show numbers */
 		if(show_result){
-			if(result == 0){
+			if(result_float == 0){
 				seven_segment_enable(0, true);
 				seven_segment_set_number(0, 0);
 			}
 			else{
-				/* Convert float to display number type */
+				number_convert_from_float(result_float, &result);
+				number_show(&result);
 			}
 		}
 		else{
@@ -67,22 +70,25 @@ void keyboard_callback(keyboard_key_id key, keyboard_event_id event){
 				}
 
 				display_float = number_convert_to_float(&display);
+
 				switch(operation){
-					case CALC_OP_ADD: result += display_float; break;
-					case CALC_OP_SUBSTRACT: result -= display_float; break;
-					case CALC_OP_MULTIPLY: result *= display_float; break;
+					case CALC_OP_ADD: buffer_float += display_float; break;
+					case CALC_OP_SUBSTRACT: buffer_float -= display_float; break;
+					case CALC_OP_MULTIPLY: buffer_float *= display_float; break;
 					case CALC_OP_DIVIDE:
 						if(display_float == 0){
 							return;
 						}
 
-						result /= display_float;
+						buffer_float /= display_float;
 						break;
 
 					default:
 						return;
 				}
 
+				wait_second_arg = false;
+				result_float = buffer_float;
 				show_result = true;
 				break;
 
@@ -111,6 +117,13 @@ void keyboard_callback(keyboard_key_id key, keyboard_event_id event){
 					display.absolute = key;
 				}
 				else {
+					if(operation != CALC_OP_NONE && wait_second_arg == false){
+						/* Save result on screen to buffer */
+						buffer_float = number_convert_to_float(&display);
+						number_set_zero(&display);
+						wait_second_arg = true;
+					}
+
 					if(display.fraction_digits){
 						if(display.fraction){
 							if(display.fraction_digits < DIGITS_COUNT){
@@ -143,8 +156,10 @@ void keyboard_callback(keyboard_key_id key, keyboard_event_id event){
 		switch(key){
 			case KEY_EQUAL_ID:
 				/* Clear result & display */
-				result = 0;
+				result_float = 0;
+				buffer_float = 0;
 				show_result = true;
+				wait_second_arg = false;
 				number_set_zero(&display);
 				operation = CALC_OP_NONE;
 				break;
@@ -248,6 +263,39 @@ static float number_convert_to_float(calc_number_t *number){
 }
 
 static void number_convert_from_float(float f, calc_number_t *number){
+	uint32_t tmp;
 
+	number_set_zero(number);
+
+	/* Set sign */
+	if(f < 0){
+		number->negative = true;
+	}
+
+	/* Check range for 8-digit display */
+	if(f > 99999999){
+		number->absolute = 99999999;
+		return;
+	}
+	else if(f < -9999999){
+		number->absolute = 9999999;
+		return;
+	}
+
+	/* Invert number, for negative sign clear */
+	if(number->negative){
+		f = -f;
+	}
+
+	/* Convert absolute part */
+	number->absolute = (uint32_t)f;
+	tmp = number->absolute;
+
+	while(tmp){
+		number->absolute_digits++;
+		tmp /= 10;
+	}
+
+	number->absolute_digits -= 1;
 }
 
