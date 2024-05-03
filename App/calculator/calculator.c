@@ -5,7 +5,7 @@
 calc_number_t display, result;
 float result_float = 0;
 calc_operation_t operation = CALC_OP_NONE;
-bool wait_second_arg = false;
+bool next_argument = false;
 bool update = false;
 
 uint16_t error_timer = 0;
@@ -45,7 +45,7 @@ void calculator_main(void){
 
 			/* Clear result & display */
 			result_float = 0;
-			wait_second_arg = false;
+			next_argument = false;
 			number_set_zero(&display);
 			operation = CALC_OP_NONE;
 			return;
@@ -82,43 +82,29 @@ void keyboard_callback(keyboard_key_id key, keyboard_event_id event){
 				break;
 
 			case KEY_ADD_ID:
-				if(operation != CALC_OP_NONE){
-					calculator_calc();
-				}
-
+				calculator_calc();
 				operation = CALC_OP_ADD;
 				break;
 
 			case KEY_SUBSTRACT_ID:
-				if(operation != CALC_OP_NONE){
-					calculator_calc();
-				}
-
+				calculator_calc();
 				operation = CALC_OP_SUBSTRACT;
 				break;
 
 			case KEY_MULTIPLY_ID:
-				if(operation != CALC_OP_NONE){
-					calculator_calc();
-				}
-
+				calculator_calc();
 				operation = CALC_OP_MULTIPLY;
 				break;
 
 			case KEY_DIVIDE_ID:
-				if(operation != CALC_OP_NONE){
-					calculator_calc();
-				}
-
+				calculator_calc();
 				operation = CALC_OP_DIVIDE;
 				break;
 
 			default:
-				if(operation != CALC_OP_NONE && wait_second_arg == false){
-					/* Save result on screen to buffer */
-					result_float = number_convert_to_float(&display);
+				if(next_argument){
+					next_argument = false;
 					number_set_zero(&display);
-					wait_second_arg = true;
 				}
 
 				if(display.fraction_digits){
@@ -153,7 +139,7 @@ void keyboard_callback(keyboard_key_id key, keyboard_event_id event){
 			case KEY_EQUAL_ID:
 				/* Clear result & display */
 				result_float = 0;
-				wait_second_arg = false;
+				next_argument = false;
 				number_set_zero(&display);
 				operation = CALC_OP_NONE;
 				break;
@@ -177,6 +163,8 @@ static void calculator_calc(void){
 	static float tmp;
 
 	if(operation == CALC_OP_NONE){
+		result_float = number_convert_to_float(&display);
+		next_argument = true;
 		return;
 	}
 
@@ -199,8 +187,9 @@ static void calculator_calc(void){
 			return;
 	}
 
-	wait_second_arg = false;
 	number_convert_from_float(result_float, &display);
+	operation = CALC_OP_NONE;
+	next_argument = true;
 }
 
 static void number_set_zero(calc_number_t *number){
