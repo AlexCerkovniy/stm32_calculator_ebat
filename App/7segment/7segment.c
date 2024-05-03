@@ -62,7 +62,8 @@ bool seven_segment_is_enabled(uint8_t index){
 }
 
 void seven_segment_set_symbol(uint8_t index, uint8_t symbol){
-	digit[index].symbol = symbol;
+	digit[index].symbol &= ~0x7F;
+	digit[index].symbol |= symbol;
 }
 
 uint8_t seven_segment_get_symbol(uint8_t index){
@@ -87,6 +88,6 @@ void seven_segment_set_number(uint8_t index, uint8_t number){
 		number = 9;
 	}
 
-	digit[index].symbol = digits[number];
+	seven_segment_set_symbol(index, digits[number]);
 }
 
