@@ -3,6 +3,7 @@
 #include "keyboard.h"
 
 calc_number_t display;
+float display_float;
 float result = 0;
 calc_operation_t operation = CALC_OP_NONE;
 bool show_result = true;
@@ -10,6 +11,8 @@ bool update = false;
 
 static void number_set_zero(calc_number_t *number);
 static void number_show(calc_number_t *number);
+static float number_convert_to_float(calc_number_t *number);
+static void number_convert_from_float(float f, calc_number_t *number);
 
 void calculator_init(void){
 	number_set_zero(&display);
@@ -59,18 +62,44 @@ void keyboard_callback(keyboard_key_id key, keyboard_event_id event){
 				break;
 
 			case KEY_EQUAL_ID:
+				if(operation == CALC_OP_NONE){
+					return;
+				}
+
+				display_float = number_convert_to_float(&display);
+				switch(operation){
+					case CALC_OP_ADD: result += display_float; break;
+					case CALC_OP_SUBSTRACT: result -= display_float; break;
+					case CALC_OP_MULTIPLY: result *= display_float; break;
+					case CALC_OP_DIVIDE:
+						if(display_float == 0){
+							return;
+						}
+
+						result /= display_float;
+						break;
+
+					default:
+						return;
+				}
+
+				show_result = true;
 				break;
 
 			case KEY_ADD_ID:
+				operation = CALC_OP_ADD;
 				break;
 
 			case KEY_SUBSTRACT_ID:
+				operation = CALC_OP_SUBSTRACT;
 				break;
 
 			case KEY_MULTIPLY_ID:
+				operation = CALC_OP_MULTIPLY;
 				break;
 
 			case KEY_DIVIDE_ID:
+				operation = CALC_OP_DIVIDE;
 				break;
 
 			default:
@@ -199,3 +228,26 @@ static void number_show(calc_number_t *number){
 		}
 	}
 }
+
+static float number_convert_to_float(calc_number_t *number){
+	float tmp = 0;
+
+	/* Fraction part */
+	if(number->fraction_digits){
+		uint32_t i = number->fraction_digits;
+		tmp = 1;
+		while(i){
+			tmp *= 10;
+			i--;
+		}
+
+		tmp = (float)number->fraction / tmp;
+	}
+
+	return (float)number->absolute + tmp;
+}
+
+static void number_convert_from_float(float f, calc_number_t *number){
+
+}
+
