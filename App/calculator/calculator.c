@@ -148,6 +148,7 @@ static void number_show(calc_number_t *number){
 	uint8_t digits_fraction = 0;
 	uint8_t digit_offset = 0;
 	uint32_t temp;
+	uint8_t i;
 
 	/* Calculate digit offset for fraction */
 	if(number->fraction_digits){
@@ -173,9 +174,9 @@ static void number_show(calc_number_t *number){
 
 	/* Show absolute part */
 	temp = number->absolute;
-	for(uint8_t seg = 0; seg < digits_absolute; seg++){
-		seven_segment_enable(seg + digit_offset, true);
-		seven_segment_set_number(seg + digit_offset, temp % 10);
+	for(i = 0; i < digits_absolute; i++){
+		seven_segment_enable(i + digit_offset, true);
+		seven_segment_set_number(i + digit_offset, temp % 10);
 		temp /= 10;
 	}
 
@@ -183,13 +184,17 @@ static void number_show(calc_number_t *number){
 	if(digits_fraction){
 		temp = number->fraction;
 		if(digits_fraction < number->fraction_digits){
-			temp /= (10 * (number->fraction_digits - digits_fraction));
+			i = number->fraction_digits - digits_fraction;
+			while(i){
+				temp /= 10;
+				i--;
+			}
 		}
 
 		seven_segment_set_dot(digit_offset, true);
-		for(uint8_t seg = 0; seg < digits_fraction; seg++){
-			seven_segment_enable(seg, true);
-			seven_segment_set_number(seg, temp % 10);
+		for(i = 0; i < digits_fraction; i++){
+			seven_segment_enable(i, true);
+			seven_segment_set_number(i, temp % 10);
 			temp /= 10;
 		}
 	}
