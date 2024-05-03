@@ -8,7 +8,6 @@ float buffer_float = 0;
 float result_float = 0;
 calc_operation_t operation = CALC_OP_NONE;
 bool wait_second_arg = false;
-bool show_result = true;
 bool update = false;
 
 static void number_set_zero(calc_number_t *number);
@@ -33,20 +32,8 @@ void calculator_main(void){
 			seven_segment_set_dot(seg, false);
 		}
 
-		/* Show numbers */
-		if(show_result){
-			if(result_float == 0){
-				seven_segment_enable(0, true);
-				seven_segment_set_number(0, 0);
-			}
-			else{
-				number_convert_from_float(result_float, &result);
-				number_show(&result);
-			}
-		}
-		else{
-			number_show(&display);
-		}
+		/* Display data on screen */
+		number_show(&display);
 	}
 }
 
@@ -54,11 +41,6 @@ void keyboard_callback(keyboard_key_id key, keyboard_event_id event){
 	if(event == KEY_SHORT_PRESS){
 		switch(key){
 			case KEY_DOT_ID:
-				if(show_result){
-					show_result = false;
-					number_set_zero(&display);
-				}
-
 				if(display.fraction_digits == 0){
 					display.fraction_digits = 1;
 				}
@@ -89,7 +71,7 @@ void keyboard_callback(keyboard_key_id key, keyboard_event_id event){
 
 				wait_second_arg = false;
 				result_float = buffer_float;
-				show_result = true;
+				number_convert_from_float(result_float, &display);
 				break;
 
 			case KEY_ADD_ID:
@@ -109,45 +91,36 @@ void keyboard_callback(keyboard_key_id key, keyboard_event_id event){
 				break;
 
 			default:
-				if(show_result){
-					show_result = false;
-
-					/* Set-up display number */
+				if(operation != CALC_OP_NONE && wait_second_arg == false){
+					/* Save result on screen to buffer */
+					buffer_float = number_convert_to_float(&display);
 					number_set_zero(&display);
-					display.absolute = key;
+					wait_second_arg = true;
 				}
-				else {
-					if(operation != CALC_OP_NONE && wait_second_arg == false){
-						/* Save result on screen to buffer */
-						buffer_float = number_convert_to_float(&display);
-						number_set_zero(&display);
-						wait_second_arg = true;
-					}
 
-					if(display.fraction_digits){
-						if(display.fraction){
-							if(display.fraction_digits < DIGITS_COUNT){
-								display.fraction *= 10;
-								display.fraction += key;
-								display.fraction_digits++;
-							}
-						}
-						else{
+				if(display.fraction_digits){
+					if(display.fraction){
+						if(display.fraction_digits < DIGITS_COUNT){
+							display.fraction *= 10;
 							display.fraction += key;
+							display.fraction_digits++;
 						}
 					}
-					else if(display.absolute_digits < DIGITS_COUNT){
-						if(display.absolute == 0 && key == KEY_0_ID){
-							break;
-						}
-
-						if(display.absolute){
-							display.absolute_digits++;
-							display.absolute *= 10;
-						}
-
-						display.absolute += key;
+					else{
+						display.fraction += key;
 					}
+				}
+				else if(display.absolute_digits < DIGITS_COUNT){
+					if(display.absolute == 0 && key == KEY_0_ID){
+						break;
+					}
+
+					if(display.absolute){
+						display.absolute_digits++;
+						display.absolute *= 10;
+					}
+
+					display.absolute += key;
 				}
 				break;
 		}
@@ -158,7 +131,6 @@ void keyboard_callback(keyboard_key_id key, keyboard_event_id event){
 				/* Clear result & display */
 				result_float = 0;
 				buffer_float = 0;
-				show_result = true;
 				wait_second_arg = false;
 				number_set_zero(&display);
 				operation = CALC_OP_NONE;
@@ -264,6 +236,7 @@ static float number_convert_to_float(calc_number_t *number){
 
 static void number_convert_from_float(float f, calc_number_t *number){
 	uint32_t tmp;
+	float ftemp;
 
 	number_set_zero(number);
 
@@ -297,5 +270,29 @@ static void number_convert_from_float(float f, calc_number_t *number){
 	}
 
 	number->absolute_digits -= 1;
+
+	/* Convert fraction part */
+	tmp = DIGITS_COUNT - number->absolute_digits;
+	f = f - (float)number->absolute;
+
+	if(tmp && (f > 0)){
+		ftemp = 1;
+		while(tmp){
+			number->fraction_digits++;
+			ftemp *= 10;
+			tmp--;
+		}
+
+		number->fraction = f * ftemp;
+
+		/* Remove trailing zeros */
+		tmp = number->fraction;
+		while(tmp % 10 == 0){
+			tmp /= 10;
+			number->fraction_digits--;
+		}
+
+		number->fraction = tmp;
+	}
 }
 
