@@ -72,7 +72,7 @@ void keyboard_callback(keyboard_key_id key, keyboard_event_id event){
 	if(event == KEY_SHORT_PRESS){
 		switch(key){
 			case KEY_DOT_ID:
-				if(display.fraction_digits == 0){
+				if(!next_argument && display.fraction_digits == 0){
 					display.fraction_digits = 1;
 				}
 				break;
