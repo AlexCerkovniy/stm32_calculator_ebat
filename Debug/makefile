@@ -13,6 +13,7 @@ RM := rm -rf
 -include Core/Startup/subdir.mk
 -include Core/Src/subdir.mk
 -include App/keyboard/subdir.mk
+-include App/button/port/subdir.mk
 -include App/button/subdir.mk
 -include App/7segment/subdir.mk
 -include objects.mk

@@ -49,6 +49,7 @@
 									<listOptionValue builtIn="false" value="../App/7segment"/>
 									<listOptionValue builtIn="false" value="../App/button"/>
 									<listOptionValue builtIn="false" value="../App/keyboard"/>
+									<listOptionValue builtIn="false" value="../App/button/port"/>
 								</option>
 								<inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.2051731804" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c"/>
 							</tool>

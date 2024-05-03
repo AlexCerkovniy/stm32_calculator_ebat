@@ -8,6 +8,18 @@ static struct{
 
 static void _buttonCallback(uint8_t button_id, button_callback_event_t event);
 
+void keyboard_init(void){
+
+}
+
+void keyboard_main(void){
+
+}
+
+void keyboard_tick(uint16_t period){
+
+}
+
 static void _buttonCallback(uint8_t button_id, button_callback_event_t event){
 	keyboard_event_id kbd_event = KEY_RELEASED;
 

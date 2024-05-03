@@ -24,6 +24,7 @@ C_DEPS :=
 SUBDIRS := \
 App/7segment \
 App/button \
+App/button/port \
 App/keyboard \
 Core/Src \
 Core/Startup \
