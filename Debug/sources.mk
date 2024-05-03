@@ -25,6 +25,7 @@ SUBDIRS := \
 App/7segment \
 App/button \
 App/button/port \
+App/calculator \
 App/keyboard \
 Core/Src \
 Core/Startup \

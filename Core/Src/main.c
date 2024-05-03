@@ -142,13 +142,17 @@ int main(void)
   /* USER CODE BEGIN 2 */
   seven_segment_init();
   seven_segment_enable(0, true);
-  seven_segment_set_number(0, 5);
+  seven_segment_set_number(0, 0);
+  keyboard_init();
+  calculator_init();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  keyboard_main();
+	  calculator_main();
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -329,6 +333,12 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void HAL_IncTick(void){
+  uwTick += uwTickFreq;
+
+  keyboard_tick(1);
+}
+
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 	if(htim == &htim4){
 		seven_segment_tick();

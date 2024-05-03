@@ -32,6 +32,8 @@ extern "C" {
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "7segment.h"
+#include "keyboard.h"
+#include "calculator.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
