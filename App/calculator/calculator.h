@@ -3,6 +3,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#define ERROR_MSG_SHOW_TIME_MS		(1000)
+
 typedef enum {
 	CALC_OP_NONE = 0,
 	CALC_OP_ADD,
@@ -21,3 +23,4 @@ typedef struct {
 
 void calculator_init(void);
 void calculator_main(void);
+void calculator_tick(uint16_t period);

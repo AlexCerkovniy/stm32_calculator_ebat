@@ -337,6 +337,7 @@ void HAL_IncTick(void){
   uwTick += uwTickFreq;
 
   keyboard_tick(1);
+  calculator_tick(1);
 }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){

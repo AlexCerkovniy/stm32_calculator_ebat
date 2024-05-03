@@ -10,6 +10,9 @@ calc_operation_t operation = CALC_OP_NONE;
 bool wait_second_arg = false;
 bool update = false;
 
+uint16_t error_timer = 0;
+uint8_t error_msg[] = {0x79, 0x50, 0x50};
+
 static void number_set_zero(calc_number_t *number);
 static void number_show(calc_number_t *number);
 static float number_convert_to_float(calc_number_t *number);
@@ -32,8 +35,37 @@ void calculator_main(void){
 			seven_segment_set_dot(seg, false);
 		}
 
+		if(error_timer){
+			seven_segment_enable(2, true);
+			seven_segment_set_symbol(2, error_msg[0]);
+			seven_segment_enable(1, true);
+			seven_segment_set_symbol(1, error_msg[1]);
+			seven_segment_enable(0, true);
+			seven_segment_set_symbol(0, error_msg[2]);
+
+			/* Clear result & display */
+			result_float = 0;
+			buffer_float = 0;
+			wait_second_arg = false;
+			number_set_zero(&display);
+			operation = CALC_OP_NONE;
+			return;
+		}
+
 		/* Display data on screen */
 		number_show(&display);
+	}
+}
+
+void calculator_tick(uint16_t period){
+	if(error_timer){
+		if(error_timer > period){
+			error_timer -= period;
+		}
+		else{
+			error_timer = 0;
+			update = true;
+		}
 	}
 }
 
@@ -59,7 +91,8 @@ void keyboard_callback(keyboard_key_id key, keyboard_event_id event){
 					case CALC_OP_MULTIPLY: buffer_float *= display_float; break;
 					case CALC_OP_DIVIDE:
 						if(display_float == 0){
-							return;
+							error_timer = ERROR_MSG_SHOW_TIME_MS;
+							break;
 						}
 
 						buffer_float /= display_float;
@@ -263,13 +296,14 @@ static void number_convert_from_float(float f, calc_number_t *number){
 	/* Convert absolute part */
 	number->absolute = (uint32_t)f;
 	tmp = number->absolute;
+	if(tmp){
+		while(tmp){
+			number->absolute_digits++;
+			tmp /= 10;
+		}
 
-	while(tmp){
-		number->absolute_digits++;
-		tmp /= 10;
+		number->absolute_digits -= 1;
 	}
-
-	number->absolute_digits -= 1;
 
 	/* Convert fraction part */
 	tmp = DIGITS_COUNT - number->absolute_digits;
