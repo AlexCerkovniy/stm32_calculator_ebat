@@ -3,7 +3,6 @@
 #include "keyboard.h"
 
 calc_number_t display, result;
-float display_float = 0;
 float result_float = 0;
 calc_operation_t operation = CALC_OP_NONE;
 bool wait_second_arg = false;
@@ -175,23 +174,25 @@ void keyboard_callback(keyboard_key_id key, keyboard_event_id event){
 }
 
 static void calculator_calc(void){
+	static float tmp;
+
 	if(operation == CALC_OP_NONE){
 		return;
 	}
 
-	display_float = number_convert_to_float(&display);
+	tmp = number_convert_to_float(&display);
 
 	switch(operation){
-		case CALC_OP_ADD: result_float += display_float; break;
-		case CALC_OP_SUBSTRACT: result_float -= display_float; break;
-		case CALC_OP_MULTIPLY: result_float *= display_float; break;
+		case CALC_OP_ADD: result_float += tmp; break;
+		case CALC_OP_SUBSTRACT: result_float -= tmp; break;
+		case CALC_OP_MULTIPLY: result_float *= tmp; break;
 		case CALC_OP_DIVIDE:
-			if(display_float == 0){
+			if(tmp == 0){
 				error_timer = ERROR_MSG_SHOW_TIME_MS;
 				break;
 			}
 
-			result_float /= display_float;
+			result_float /= tmp;
 			break;
 
 		default:
