@@ -11,5 +11,13 @@ typedef enum {
 	CALC_OP_DIVIDE
 } calc_operation_t;
 
+typedef struct {
+	uint32_t absolute;
+	uint8_t absolute_digits;
+	uint32_t fraction;
+	uint8_t fraction_digits;
+	bool negative;
+} calc_number_t;
+
 void calculator_init(void);
 void calculator_main(void);
