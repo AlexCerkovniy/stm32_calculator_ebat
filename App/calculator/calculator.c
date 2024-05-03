@@ -4,7 +4,6 @@
 
 calc_number_t display, result;
 float display_float = 0;
-float buffer_float = 0;
 float result_float = 0;
 calc_operation_t operation = CALC_OP_NONE;
 bool wait_second_arg = false;
@@ -12,6 +11,8 @@ bool update = false;
 
 uint16_t error_timer = 0;
 uint8_t error_msg[] = {0x79, 0x50, 0x50};
+
+static void calculator_calc(void);
 
 static void number_set_zero(calc_number_t *number);
 static void number_show(calc_number_t *number);
@@ -45,7 +46,6 @@ void calculator_main(void){
 
 			/* Clear result & display */
 			result_float = 0;
-			buffer_float = 0;
 			wait_second_arg = false;
 			number_set_zero(&display);
 			operation = CALC_OP_NONE;
@@ -79,54 +79,45 @@ void keyboard_callback(keyboard_key_id key, keyboard_event_id event){
 				break;
 
 			case KEY_EQUAL_ID:
-				if(operation == CALC_OP_NONE){
-					return;
-				}
-
-				display_float = number_convert_to_float(&display);
-
-				switch(operation){
-					case CALC_OP_ADD: buffer_float += display_float; break;
-					case CALC_OP_SUBSTRACT: buffer_float -= display_float; break;
-					case CALC_OP_MULTIPLY: buffer_float *= display_float; break;
-					case CALC_OP_DIVIDE:
-						if(display_float == 0){
-							error_timer = ERROR_MSG_SHOW_TIME_MS;
-							break;
-						}
-
-						buffer_float /= display_float;
-						break;
-
-					default:
-						return;
-				}
-
-				wait_second_arg = false;
-				result_float = buffer_float;
-				number_convert_from_float(result_float, &display);
+				calculator_calc();
 				break;
 
 			case KEY_ADD_ID:
+				if(operation != CALC_OP_NONE){
+					calculator_calc();
+				}
+
 				operation = CALC_OP_ADD;
 				break;
 
 			case KEY_SUBSTRACT_ID:
+				if(operation != CALC_OP_NONE){
+					calculator_calc();
+				}
+
 				operation = CALC_OP_SUBSTRACT;
 				break;
 
 			case KEY_MULTIPLY_ID:
+				if(operation != CALC_OP_NONE){
+					calculator_calc();
+				}
+
 				operation = CALC_OP_MULTIPLY;
 				break;
 
 			case KEY_DIVIDE_ID:
+				if(operation != CALC_OP_NONE){
+					calculator_calc();
+				}
+
 				operation = CALC_OP_DIVIDE;
 				break;
 
 			default:
 				if(operation != CALC_OP_NONE && wait_second_arg == false){
 					/* Save result on screen to buffer */
-					buffer_float = number_convert_to_float(&display);
+					result_float = number_convert_to_float(&display);
 					number_set_zero(&display);
 					wait_second_arg = true;
 				}
@@ -163,7 +154,6 @@ void keyboard_callback(keyboard_key_id key, keyboard_event_id event){
 			case KEY_EQUAL_ID:
 				/* Clear result & display */
 				result_float = 0;
-				buffer_float = 0;
 				wait_second_arg = false;
 				number_set_zero(&display);
 				operation = CALC_OP_NONE;
@@ -182,6 +172,34 @@ void keyboard_callback(keyboard_key_id key, keyboard_event_id event){
 	}
 
 	update = true;
+}
+
+static void calculator_calc(void){
+	if(operation == CALC_OP_NONE){
+		return;
+	}
+
+	display_float = number_convert_to_float(&display);
+
+	switch(operation){
+		case CALC_OP_ADD: result_float += display_float; break;
+		case CALC_OP_SUBSTRACT: result_float -= display_float; break;
+		case CALC_OP_MULTIPLY: result_float *= display_float; break;
+		case CALC_OP_DIVIDE:
+			if(display_float == 0){
+				error_timer = ERROR_MSG_SHOW_TIME_MS;
+				break;
+			}
+
+			result_float /= display_float;
+			break;
+
+		default:
+			return;
+	}
+
+	wait_second_arg = false;
+	number_convert_from_float(result_float, &display);
 }
 
 static void number_set_zero(calc_number_t *number){
