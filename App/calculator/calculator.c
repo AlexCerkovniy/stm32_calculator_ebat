@@ -69,6 +69,8 @@ void calculator_tick(uint16_t period){
 }
 
 void keyboard_callback(keyboard_key_id key, keyboard_event_id event){
+	uint8_t digits_limit;
+
 	if(event == KEY_SHORT_PRESS){
 		switch(key){
 			case KEY_DOT_ID:
@@ -107,9 +109,14 @@ void keyboard_callback(keyboard_key_id key, keyboard_event_id event){
 					number_set_zero(&display);
 				}
 
+				digits_limit = DIGITS_COUNT;
+				if(display.negative){
+					digits_limit -= 1;
+				}
+
 				if(display.fraction_digits){
 					if(display.fraction){
-						if(display.fraction_digits < DIGITS_COUNT){
+						if(display.fraction_digits < digits_limit){
 							display.fraction *= 10;
 							display.fraction += key;
 							display.fraction_digits++;
@@ -119,7 +126,7 @@ void keyboard_callback(keyboard_key_id key, keyboard_event_id event){
 						display.fraction += key;
 					}
 				}
-				else if(display.absolute_digits < DIGITS_COUNT){
+				else if(display.absolute_digits < digits_limit){
 					if(display.absolute == 0 && key == KEY_0_ID){
 						break;
 					}
@@ -237,7 +244,7 @@ static void number_show(calc_number_t *number){
 		temp /= 10;
 	}
 
-	/* Show absolute part */
+	/* Show fraction part */
 	if(digits_fraction){
 		temp = number->fraction;
 		if(digits_fraction < number->fraction_digits){
