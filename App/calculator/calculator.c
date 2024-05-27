@@ -7,17 +7,44 @@ static uint32_t leds_effects_startup[] = {
 		KEY_1_LED_MASK | KEY_2_LED_MASK | KEY_3_LED_MASK | KEY_SUBSTRACT_LED_MASK,
 		KEY_4_LED_MASK | KEY_5_LED_MASK | KEY_6_LED_MASK | KEY_MULTIPLY_LED_MASK,
 		KEY_7_LED_MASK | KEY_8_LED_MASK | KEY_9_LED_MASK | KEY_DIVIDE_LED_MASK,
+
 		KEY_0_LED_MASK | KEY_1_LED_MASK | KEY_4_LED_MASK | KEY_7_LED_MASK,
 		KEY_DOT_LED_MASK | KEY_2_LED_MASK | KEY_5_LED_MASK | KEY_8_LED_MASK,
 		KEY_EQUAL_LED_MASK | KEY_3_LED_MASK | KEY_6_LED_MASK | KEY_9_LED_MASK,
 		KEY_ADD_LED_MASK | KEY_SUBSTRACT_LED_MASK | KEY_MULTIPLY_LED_MASK | KEY_DIVIDE_LED_MASK,
+
+		KEY_DIVIDE_LED_MASK,
+		KEY_9_LED_MASK | KEY_MULTIPLY_LED_MASK,
+		KEY_8_LED_MASK | KEY_6_LED_MASK | KEY_SUBSTRACT_LED_MASK,
+		KEY_7_LED_MASK | KEY_5_LED_MASK | KEY_3_LED_MASK | KEY_ADD_LED_MASK,
+		KEY_4_LED_MASK | KEY_2_LED_MASK | KEY_EQUAL_LED_MASK,
+		KEY_1_LED_MASK | KEY_DOT_LED_MASK,
+		KEY_0_LED_MASK,
+
+		KEY_7_LED_MASK,
+		KEY_4_LED_MASK | KEY_8_LED_MASK,
+		KEY_1_LED_MASK | KEY_5_LED_MASK | KEY_9_LED_MASK,
+		KEY_0_LED_MASK | KEY_2_LED_MASK | KEY_6_LED_MASK | KEY_DIVIDE_LED_MASK,
+		KEY_DOT_LED_MASK | KEY_3_LED_MASK | KEY_MULTIPLY_LED_MASK,
+		KEY_EQUAL_LED_MASK | KEY_SUBSTRACT_LED_MASK,
+		KEY_ADD_LED_MASK,
+
+		KEY_ADD_LED_MASK | KEY_SUBSTRACT_LED_MASK | KEY_MULTIPLY_LED_MASK | KEY_DIVIDE_LED_MASK,
 		KEY_EQUAL_LED_MASK | KEY_3_LED_MASK | KEY_6_LED_MASK | KEY_9_LED_MASK,
 		KEY_DOT_LED_MASK | KEY_2_LED_MASK | KEY_5_LED_MASK | KEY_8_LED_MASK,
 		KEY_0_LED_MASK | KEY_1_LED_MASK | KEY_4_LED_MASK | KEY_7_LED_MASK,
+
 		KEY_7_LED_MASK | KEY_8_LED_MASK | KEY_9_LED_MASK | KEY_DIVIDE_LED_MASK,
 		KEY_4_LED_MASK | KEY_5_LED_MASK | KEY_6_LED_MASK | KEY_MULTIPLY_LED_MASK,
 		KEY_1_LED_MASK | KEY_2_LED_MASK | KEY_3_LED_MASK | KEY_SUBSTRACT_LED_MASK,
 		KEY_0_LED_MASK | KEY_DOT_LED_MASK | KEY_EQUAL_LED_MASK | KEY_ADD_LED_MASK
+};
+
+static uint32_t leds_effects_clear[] = {
+		KEY_0_LED_MASK | KEY_DOT_LED_MASK | KEY_EQUAL_LED_MASK | KEY_ADD_LED_MASK,
+		KEY_1_LED_MASK | KEY_2_LED_MASK | KEY_3_LED_MASK | KEY_SUBSTRACT_LED_MASK,
+		KEY_4_LED_MASK | KEY_5_LED_MASK | KEY_6_LED_MASK | KEY_MULTIPLY_LED_MASK,
+		KEY_7_LED_MASK | KEY_8_LED_MASK | KEY_9_LED_MASK | KEY_DIVIDE_LED_MASK
 };
 
 calc_number_t display, result;
@@ -36,14 +63,17 @@ static void number_show(calc_number_t *number);
 static float number_convert_to_float(calc_number_t *number);
 static void number_convert_from_float(float f, calc_number_t *number);
 
-void calculator_init(void){
-	/* Show keyboard effects */
-	for(uint8_t i = 0; i < sizeof(leds_effects_startup)/sizeof(leds_effects_startup[0]); i++){
+static void keyboard_run_led_effect(uint32_t *effect, uint32_t steps, uint32_t speed){
+		for(uint8_t i = 0; i < steps; i++){
+			keyboard_clear_led(KEY_LED_ALL_MASK);
+			keyboard_set_led(effect[i]);
+			HAL_Delay(speed);
+		}
 		keyboard_clear_led(KEY_LED_ALL_MASK);
-		keyboard_set_led(leds_effects_startup[i]);
-		HAL_Delay(150);
-	}
-	keyboard_clear_led(KEY_LED_ALL_MASK);
+}
+
+void calculator_init(void){
+	keyboard_run_led_effect(leds_effects_startup, sizeof(leds_effects_startup)/sizeof(leds_effects_startup[0]), 75);
 
 	number_set_zero(&display);
 	result_float = 0;
@@ -186,6 +216,7 @@ void keyboard_callback(keyboard_key_id key, keyboard_event_id event){
 				next_argument = false;
 				number_set_zero(&display);
 				keyboard_clear_led(KEY_ADD_LED_MASK|KEY_SUBSTRACT_LED_MASK|KEY_MULTIPLY_LED_MASK|KEY_DIVIDE_LED_MASK);
+				keyboard_run_led_effect(leds_effects_clear, sizeof(leds_effects_clear)/sizeof(leds_effects_clear[0]), 30);
 				operation = CALC_OP_NONE;
 				break;
 
