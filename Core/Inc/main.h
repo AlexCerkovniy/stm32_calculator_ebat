@@ -91,6 +91,14 @@ void Error_Handler(void);
 #define KEY_C3_GPIO_Port GPIOB
 #define KEY_C4_Pin GPIO_PIN_15
 #define KEY_C4_GPIO_Port GPIOB
+#define KEY_LED_R4_Pin GPIO_PIN_8
+#define KEY_LED_R4_GPIO_Port GPIOA
+#define KEY_LED_R3_Pin GPIO_PIN_9
+#define KEY_LED_R3_GPIO_Port GPIOA
+#define KEY_LED_R2_Pin GPIO_PIN_10
+#define KEY_LED_R2_GPIO_Port GPIOA
+#define KEY_LED_R1_Pin GPIO_PIN_11
+#define KEY_LED_R1_GPIO_Port GPIOA
 #define D1_Pin GPIO_PIN_12
 #define D1_GPIO_Port GPIOA
 #define D2_Pin GPIO_PIN_15

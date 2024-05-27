@@ -4,13 +4,18 @@
 
 static struct{
 	button_t button[KEY_COUNT];
+	uint32_t led_states;
 }keyboard;
+
+static uint8_t column_index = 0;
+static uint16_t column_pin[] = {KEY_C1_Pin, KEY_C2_Pin, KEY_C3_Pin, KEY_C4_Pin};
 
 /* Exported buttons state from buttons driver */
 extern uint16_t buttons_state;
 
 static void button_callback(uint8_t button_id, button_callback_event_t event);
 static void scan_buttons(void);
+static void led_show(void);
 
 void keyboard_init(void){
 	for(uint32_t btn = 0; btn < KEY_COUNT; btn++){
@@ -39,6 +44,14 @@ void keyboard_tick(uint16_t period){
 	}
 }
 
+void keyboard_set_led(uint32_t mask){
+	keyboard.led_states |= mask;
+}
+
+void keyboard_clear_led(uint32_t mask){
+	keyboard.led_states &= ~mask;
+}
+
 static void button_callback(uint8_t button_id, button_callback_event_t event){
 	keyboard_event_id kbd_event = KEY_RELEASED;
 
@@ -63,8 +76,6 @@ static void button_callback(uint8_t button_id, button_callback_event_t event){
 __attribute__((weak)) void keyboard_callback(keyboard_key_id key, keyboard_event_id event){}
 
 static void scan_buttons(void){
-	static uint8_t column_index = 0;
-	static uint16_t column_pin[] = {KEY_C1_Pin, KEY_C2_Pin, KEY_C3_Pin, KEY_C4_Pin};
 	uint16_t tmp = 0;
 
 	/* Read coulumn buttons */
@@ -88,5 +99,18 @@ static void scan_buttons(void){
 	if(column_index >= 4){
 		column_index = 0;
 	}
+
+	/* Show next buttons LED's column */
+	led_show();
+
 	HAL_GPIO_WritePin(GPIOB, column_pin[column_index], RESET);
+}
+
+static void led_show(void){
+	/* Clear led rows output */
+	GPIOA->ODR &= ~(KEY_LED_R4_Pin|KEY_LED_R3_Pin|KEY_LED_R2_Pin|KEY_LED_R1_Pin);
+
+	/* Set new led rows output */
+	uint32_t tmp = (keyboard.led_states >> (column_index * 4)) & 0x0F;
+	GPIOA->ODR |= (tmp << 8);
 }
