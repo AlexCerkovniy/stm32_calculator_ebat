@@ -2,6 +2,24 @@
 #include "7segment.h"
 #include "keyboard.h"
 
+static uint32_t leds_effects_startup[] = {
+		KEY_0_LED_MASK | KEY_DOT_LED_MASK | KEY_EQUAL_LED_MASK | KEY_ADD_LED_MASK,
+		KEY_1_LED_MASK | KEY_2_LED_MASK | KEY_3_LED_MASK | KEY_SUBSTRACT_LED_MASK,
+		KEY_4_LED_MASK | KEY_5_LED_MASK | KEY_6_LED_MASK | KEY_MULTIPLY_LED_MASK,
+		KEY_7_LED_MASK | KEY_8_LED_MASK | KEY_9_LED_MASK | KEY_DIVIDE_LED_MASK,
+		KEY_0_LED_MASK | KEY_1_LED_MASK | KEY_4_LED_MASK | KEY_7_LED_MASK,
+		KEY_DOT_LED_MASK | KEY_2_LED_MASK | KEY_5_LED_MASK | KEY_8_LED_MASK,
+		KEY_EQUAL_LED_MASK | KEY_3_LED_MASK | KEY_6_LED_MASK | KEY_9_LED_MASK,
+		KEY_ADD_LED_MASK | KEY_SUBSTRACT_LED_MASK | KEY_MULTIPLY_LED_MASK | KEY_DIVIDE_LED_MASK,
+		KEY_EQUAL_LED_MASK | KEY_3_LED_MASK | KEY_6_LED_MASK | KEY_9_LED_MASK,
+		KEY_DOT_LED_MASK | KEY_2_LED_MASK | KEY_5_LED_MASK | KEY_8_LED_MASK,
+		KEY_0_LED_MASK | KEY_1_LED_MASK | KEY_4_LED_MASK | KEY_7_LED_MASK,
+		KEY_7_LED_MASK | KEY_8_LED_MASK | KEY_9_LED_MASK | KEY_DIVIDE_LED_MASK,
+		KEY_4_LED_MASK | KEY_5_LED_MASK | KEY_6_LED_MASK | KEY_MULTIPLY_LED_MASK,
+		KEY_1_LED_MASK | KEY_2_LED_MASK | KEY_3_LED_MASK | KEY_SUBSTRACT_LED_MASK,
+		KEY_0_LED_MASK | KEY_DOT_LED_MASK | KEY_EQUAL_LED_MASK | KEY_ADD_LED_MASK
+};
+
 calc_number_t display, result;
 float result_float = 0;
 calc_operation_t operation = CALC_OP_NONE;
@@ -19,6 +37,14 @@ static float number_convert_to_float(calc_number_t *number);
 static void number_convert_from_float(float f, calc_number_t *number);
 
 void calculator_init(void){
+	/* Show keyboard effects */
+	for(uint8_t i = 0; i < sizeof(leds_effects_startup)/sizeof(leds_effects_startup[0]); i++){
+		keyboard_clear_led(KEY_LED_ALL_MASK);
+		keyboard_set_led(leds_effects_startup[i]);
+		HAL_Delay(150);
+	}
+	keyboard_clear_led(KEY_LED_ALL_MASK);
+
 	number_set_zero(&display);
 	result_float = 0;
 	operation = CALC_OP_NONE;
@@ -48,6 +74,7 @@ void calculator_main(void){
 			next_argument = false;
 			number_set_zero(&display);
 			operation = CALC_OP_NONE;
+			keyboard_clear_led(KEY_ADD_LED_MASK|KEY_SUBSTRACT_LED_MASK|KEY_MULTIPLY_LED_MASK|KEY_DIVIDE_LED_MASK);
 			return;
 		}
 
@@ -81,26 +108,36 @@ void keyboard_callback(keyboard_key_id key, keyboard_event_id event){
 
 			case KEY_EQUAL_ID:
 				calculator_calc();
+				operation = CALC_OP_NONE;
+				keyboard_clear_led(KEY_ADD_LED_MASK|KEY_SUBSTRACT_LED_MASK|KEY_MULTIPLY_LED_MASK|KEY_DIVIDE_LED_MASK);
 				break;
 
 			case KEY_ADD_ID:
 				calculator_calc();
 				operation = CALC_OP_ADD;
+				keyboard_clear_led(KEY_ADD_LED_MASK|KEY_SUBSTRACT_LED_MASK|KEY_MULTIPLY_LED_MASK|KEY_DIVIDE_LED_MASK);
+				keyboard_set_led(KEY_ADD_LED_MASK);
 				break;
 
 			case KEY_SUBSTRACT_ID:
 				calculator_calc();
 				operation = CALC_OP_SUBSTRACT;
+				keyboard_clear_led(KEY_ADD_LED_MASK|KEY_SUBSTRACT_LED_MASK|KEY_MULTIPLY_LED_MASK|KEY_DIVIDE_LED_MASK);
+				keyboard_set_led(KEY_SUBSTRACT_LED_MASK);
 				break;
 
 			case KEY_MULTIPLY_ID:
 				calculator_calc();
 				operation = CALC_OP_MULTIPLY;
+				keyboard_clear_led(KEY_ADD_LED_MASK|KEY_SUBSTRACT_LED_MASK|KEY_MULTIPLY_LED_MASK|KEY_DIVIDE_LED_MASK);
+				keyboard_set_led(KEY_MULTIPLY_LED_MASK);
 				break;
 
 			case KEY_DIVIDE_ID:
 				calculator_calc();
 				operation = CALC_OP_DIVIDE;
+				keyboard_clear_led(KEY_ADD_LED_MASK|KEY_SUBSTRACT_LED_MASK|KEY_MULTIPLY_LED_MASK|KEY_DIVIDE_LED_MASK);
+				keyboard_set_led(KEY_DIVIDE_LED_MASK);
 				break;
 
 			default:
@@ -148,6 +185,7 @@ void keyboard_callback(keyboard_key_id key, keyboard_event_id event){
 				result_float = 0;
 				next_argument = false;
 				number_set_zero(&display);
+				keyboard_clear_led(KEY_ADD_LED_MASK|KEY_SUBSTRACT_LED_MASK|KEY_MULTIPLY_LED_MASK|KEY_DIVIDE_LED_MASK);
 				operation = CALC_OP_NONE;
 				break;
 
