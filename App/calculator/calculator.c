@@ -72,8 +72,55 @@ static void keyboard_run_led_effect(uint32_t *effect, uint32_t steps, uint32_t s
 		keyboard_clear_led(KEY_LED_ALL_MASK);
 }
 
+void calculator_greetings(void){
+	/* Disable all segments */
+	for(uint8_t seg = 0; seg < DIGITS_COUNT; seg++){
+		seven_segment_enable(seg, false);
+		seven_segment_set_dot(seg, false);
+	}
+
+	/* Set some text: CALC */
+	seven_segment_enable(7, true);
+	seven_segment_set_symbol(7, 0x39);
+	seven_segment_enable(6, true);
+	seven_segment_set_symbol(6, 0x77);
+	seven_segment_enable(5, true);
+	seven_segment_set_symbol(5, 0x38);
+	seven_segment_enable(4, true);
+	seven_segment_set_symbol(4, 0x39);
+
+	HAL_Delay(1000);
+
+	/* Disable all segments */
+	for(uint8_t seg = 0; seg < DIGITS_COUNT; seg++){
+		seven_segment_enable(seg, false);
+		seven_segment_set_dot(seg, false);
+	}
+
+	/* Set some text: EL21 */
+	seven_segment_enable(4, true);
+	seven_segment_set_symbol(4, 0x79);
+	seven_segment_enable(3, true);
+	seven_segment_set_symbol(3, 0x38);
+	seven_segment_enable(2, true);
+	seven_segment_set_symbol(2, 0x40);
+	seven_segment_enable(1, true);
+	seven_segment_set_number(1, 2);
+	seven_segment_enable(0, true);
+	seven_segment_set_number(0, 1);
+
+	HAL_Delay(1000);
+}
+
 void calculator_init(void){
+	calculator_greetings();
 	keyboard_run_led_effect(leds_effects_startup, sizeof(leds_effects_startup)/sizeof(leds_effects_startup[0]), 75);
+
+	/* Disable all segments */
+	for(uint8_t seg = 0; seg < DIGITS_COUNT; seg++){
+		seven_segment_enable(seg, false);
+		seven_segment_set_dot(seg, false);
+	}
 
 	number_set_zero(&display);
 	result_float = 0;
@@ -277,6 +324,7 @@ static void number_set_zero(calc_number_t *number){
 }
 
 static void number_show(calc_number_t *number){
+	uint8_t digits_capacity = DIGITS_COUNT;
 	uint8_t digits_absolute = number->absolute_digits;
 	uint8_t digits_fraction = 0;
 	uint8_t digit_offset = 0;
@@ -286,7 +334,11 @@ static void number_show(calc_number_t *number){
 	/* Calculate digit offset for fraction */
 	if(number->fraction_digits){
 		if(number->fraction > 0){
-			if(number->absolute_digits == DIGITS_COUNT){
+			if(number->negative){
+				digits_capacity--;
+			}
+
+			if(number->absolute_digits >= digits_capacity){
 				/* Show only dot, we don't have space for fraction show */
 				seven_segment_set_dot(0, true);
 			}
@@ -295,13 +347,33 @@ static void number_show(calc_number_t *number){
 				digit_offset = digits_fraction;
 			}
 			else{
-				digits_fraction = DIGITS_COUNT - number->absolute_digits;
+				digits_fraction = digits_capacity - number->absolute_digits;
 				digit_offset = digits_fraction;
+			}
+
+			if(number->negative){
+				seven_segment_enable(digits_fraction + number->absolute_digits, true);
+				seven_segment_set_symbol(digits_fraction + number->absolute_digits, 0x40);
 			}
 		}
 		else{
 			/* Show only dot */
 			seven_segment_set_dot(0, true);
+		}
+	}
+	else{
+		/* If number is negative - check if number digits fit on screen */
+		if(number->negative){
+			if(digits_absolute >= digits_capacity){
+				digits_absolute--;
+
+				if(number->absolute >= 10000000){
+					number->absolute = 9999999;
+				}
+			}
+
+			seven_segment_enable(digits_absolute, true);
+			seven_segment_set_symbol(digits_absolute, 0x40);
 		}
 	}
 
@@ -348,7 +420,13 @@ static float number_convert_to_float(calc_number_t *number){
 		tmp = (float)number->fraction / tmp;
 	}
 
-	return (float)number->absolute + tmp;
+	tmp += (float)number->absolute;
+
+	if(number->negative){
+		tmp = -tmp;
+	}
+
+	return tmp;
 }
 
 static void number_convert_from_float(float f, calc_number_t *number){

@@ -1,6 +1,8 @@
 #include "7segment.h"
 #include "main.h"
 
+//https://en.wikichip.org/wiki/seven-segment_display/representing_letters
+
 /* 0 - 9 digits codes */
 static const uint8_t digits[] = {63, 6, 91, 79, 102, 109, 125, 7, 127, 111};
 
